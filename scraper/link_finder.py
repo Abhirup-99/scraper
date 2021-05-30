@@ -1,6 +1,5 @@
 from html.parser import HTMLParser
 from typing import Set
-from urllib import parse
 
 
 class LinkFinder(HTMLParser):
