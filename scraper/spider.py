@@ -1,50 +1,61 @@
 from urllib.request import urlopen
 from link_finder import LinkFinder
-from demo1 import *
-from domain import *
+from file_operation import (
+    create_project_dir,
+    create_data_files,
+    file_to_set,
+    set_to_file,
+)
+from domain import get_domain_name
+from typing import Set
 
 
 class Spider:
-    project_name = ''
-    base_url = ''
-    domain_name = ''
-    queue_file = ''
-    crawled_file = ''
-    queue = set()
-    crawled = set()
+    project_name = ""
+    base_url = ""
+    domain_name = ""
+    queue_file = ""
+    crawled_file = ""
+    queue: Set[str] = set()
+    crawled: Set[str] = set()
 
-    def __init__(self, project_name, base_url, domain_name):
+    def __init__(self, project_name: str, base_url: str, domain_name: str) -> None:
         Spider.project_name = project_name
         Spider.base_url = base_url
         Spider.domain_name = domain_name
-        Spider.queue_file = Spider.project_name + '/queue.txt'
-        Spider.crawled_file = Spider.project_name + '/crawled.txt'
+        Spider.queue_file = Spider.project_name + "/queue.txt"
+        Spider.crawled_file = Spider.project_name + "/crawled.txt"
         self.boot()
-        self.crawl_page('First spider', Spider.base_url)
+        self.crawl_page("First spider", Spider.base_url)
 
     @staticmethod
-    def boot():
+    def boot() -> None:
         create_project_dir(Spider.project_name)
         create_data_files(Spider.project_name, Spider.base_url)
         Spider.queue = file_to_set(Spider.queue_file)
         Spider.crawled = file_to_set(Spider.crawled_file)
 
     @staticmethod
-    def crawl_page(thread_name, page_url):
+    def crawl_page(thread_name: str, page_url: str) -> None:
         if page_url not in Spider.crawled:
-            print(thread_name + 'Now crawling ' + page_url)
-            print('Queue' + str(len(Spider.queue)) + ' | Crawled ' + str(len(Spider.crawled)))
+            print(thread_name + "Now crawling " + page_url)
+            print(
+                "Queue"
+                + str(len(Spider.queue))
+                + " | Crawled "
+                + str(len(Spider.crawled))
+            )
             Spider.add_links_to_queue(Spider.gather_links(page_url))
             Spider.queue.remove(page_url)
             Spider.crawled.add(page_url)
             Spider.update_files()
 
     @staticmethod
-    def gather_links(page_url):
-        html_string = ''
+    def gather_links(page_url: str) -> Set[str]:
+        html_string = ""
         try:
             response = urlopen(page_url)
-            if 'text/html' in response.getheader('Content-Type'):
+            if "text/html" in response.getheader("Content-Type"):
                 html_bytes = response.read()
                 html_string = html_bytes.decode("utf-8")
             finder = LinkFinder(Spider.base_url, page_url)
@@ -55,7 +66,7 @@ class Spider:
         return finder.page_links()
 
     @staticmethod
-    def add_links_to_queue(links):
+    def add_links_to_queue(links) -> None:
         for url in links:
             if (url in Spider.queue) or (url in Spider.crawled):
                 continue
@@ -64,6 +75,6 @@ class Spider:
             Spider.queue.add(url)
 
     @staticmethod
-    def update_files():
+    def update_files() -> None:
         set_to_file(Spider.queue, Spider.queue_file)
         set_to_file(Spider.crawled, Spider.crawled_file)

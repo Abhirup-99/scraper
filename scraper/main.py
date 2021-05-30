@@ -1,41 +1,42 @@
 import threading
 from queue import Queue
 from spider import Spider
-from domain import *
-from demo1 import *
+from domain import get_domain_name
+from file_operation import file_to_set
+from typing import Set
 
-PROJECT_NAME = 'thesite'
-HOMEPAGE = 'http://makautexam.net/'
+PROJECT_NAME = "thesite"
+HOMEPAGE = "http://makautexam.net/"
 DOMAIN_NAME = get_domain_name(HOMEPAGE)
-QUEUE_FILE = PROJECT_NAME + '/queue.txt'
-CRAWLED_FILE = PROJECT_NAME + '/crawled.txt'
+QUEUE_FILE = PROJECT_NAME + "/queue.txt"
+CRAWLED_FILE = PROJECT_NAME + "/crawled.txt"
 NUMBER_OF_THREADS = 8
-queue = Queue()
+queue: Queue[str] = Queue()
 Spider(PROJECT_NAME, HOMEPAGE, DOMAIN_NAME)
 
 
-def crawl():
+def crawl() -> None:
     queued_links = file_to_set(QUEUE_FILE)
     if len(queued_links) > 0:
-        print(str(len(queued_links)) + ' Links in the queue ')
+        print(str(len(queued_links)) + " Links in the queue ")
         create_jobs()
 
 
-def create_jobs():
+def create_jobs() -> None:
     for link in file_to_set(QUEUE_FILE):
         queue.put(link)
         queue.join()
         crawl()
 
 
-def create_workers():
+def create_workers() -> None:
     for _ in range(NUMBER_OF_THREADS):
         t = threading.Thread(target=work)
         t.daemon = True
         t.start()
 
 
-def work():
+def work() -> None:
     while True:
         url = queue.get()
         Spider.crawl_page(threading.current_thread().name, url)

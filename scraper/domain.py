@@ -1,16 +1,16 @@
 from urllib.parse import urlparse
 
 
-def get_domain_name(url):
+def get_domain_name(url: str) -> str:
     try:
-        results = get_sub_domain_name(url).split('.')
-        return results[-2] + '.' + results[-1]
+        results = get_sub_domain_name(url).split(".")
+        return results[-2] + "." + results[-1]
     except:
-        return ''
+        return ""
 
 
-def get_sub_domain_name(url):
+def get_sub_domain_name(url: str) -> str:
     try:
         return urlparse(url).netloc
     except:
-        return ''
+        return ""
